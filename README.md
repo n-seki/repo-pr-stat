@@ -29,9 +29,9 @@ You can also provide GitHub Access Token via ENV(key=GITHUB_ACCESS_TOKEN).
 ```
 $ go run . -o DroidKaigi -r conference-app-2023 -s 2023-08-01T00:00:00+09:00 -e 2023-08-07T23:59:59+09:00
 {
-  "count": 45,
-  "averageTimeBetweenCreateClose": "30h28m33.511111111s",
-  "averageTimeBwtweenOpenClose": "25h43m54.333333333s",
+  "count": 43,
+  "averageTimeBetweenCreateMerge": "31h45m30.558139534s",
+  "averageTimeBetweenOpenMerge": "26h47m37s",
   "prCountPerUser": {
     ...
   }

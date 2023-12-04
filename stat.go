@@ -17,18 +17,18 @@ type PR struct {
 	createdBy string
 	createdAt *time.Time
 	openedAt  *time.Time
-	closedAt  *time.Time
+	mergedAt  *time.Time
 }
 
-func (pr *PR) durationBetweenCreateClose() time.Duration {
-	return pr.closedAt.Sub(*pr.createdAt)
+func (pr *PR) durationBetweenCreateMerge() time.Duration {
+	return pr.mergedAt.Sub(*pr.createdAt)
 }
 
-func (pr *PR) durationBwtweenOpenClose() time.Duration {
+func (pr *PR) durationBwtweenOpenMerge() time.Duration {
 	if pr.openedAt != nil {
-		return pr.closedAt.Sub(*pr.openedAt)
+		return pr.mergedAt.Sub(*pr.openedAt)
 	} else {
-		return pr.closedAt.Sub(*pr.createdAt)
+		return pr.mergedAt.Sub(*pr.createdAt)
 	}
 }
 
@@ -39,13 +39,13 @@ type PRStat struct {
 func (stat *PRStat) json() (string, error) {
 	s := struct {
 		Count                         int            `json:"count"`
-		AverageTimeBetweenCreateClose string         `json:"averageTimeBetweenCreateClose"`
-		AverageTimeBwtweenOpenClose   string         `json:"averageTimeBwtweenOpenClose"`
+		AverageTimeBetweenCreateMerge string         `json:"averageTimeBetweenCreateMerge"`
+		AverageTimeBetweenOpenMerge   string         `json:"averageTimeBetweenOpenMerge"`
 		PRCountPerUser                map[string]int `json:"prCountPerUser"`
 	}{
 		Count:                         stat.prCount(),
-		AverageTimeBetweenCreateClose: stat.calcAverageTimeBetweenCreateClose().String(),
-		AverageTimeBwtweenOpenClose:   stat.calcAverageTimeBetweenOpenClose().String(),
+		AverageTimeBetweenCreateMerge: stat.calcAverageTimeBetweenCreateMerge().String(),
+		AverageTimeBetweenOpenMerge:   stat.calcAverageTimeBetweenOpenMerge().String(),
 		PRCountPerUser:                stat.getPRCountPerUser(),
 	}
 	j, err := json.Marshal(s)
@@ -64,18 +64,18 @@ func (stat *PRStat) prCount() int {
 	return len(stat.pullRequest)
 }
 
-func (stat *PRStat) calcAverageTimeBetweenCreateClose() time.Duration {
+func (stat *PRStat) calcAverageTimeBetweenCreateMerge() time.Duration {
 	var total time.Duration
 	for _, pr := range stat.pullRequest {
-		total += pr.durationBetweenCreateClose()
+		total += pr.durationBetweenCreateMerge()
 	}
 	return time.Duration(total.Nanoseconds() / int64(stat.prCount()))
 }
 
-func (stat *PRStat) calcAverageTimeBetweenOpenClose() time.Duration {
+func (stat *PRStat) calcAverageTimeBetweenOpenMerge() time.Duration {
 	var total time.Duration
 	for _, pr := range stat.pullRequest {
-		total += pr.durationBwtweenOpenClose()
+		total += pr.durationBwtweenOpenMerge()
 	}
 	return time.Duration(total.Nanoseconds() / int64(stat.prCount()))
 }
@@ -113,7 +113,7 @@ func showStatAsJson(
 			createdBy: *pr.User.Login,
 			createdAt: &pr.CreatedAt.Time,
 			openedAt:  readyForReviewedAt,
-			closedAt:  &pr.ClosedAt.Time,
+			mergedAt:  &pr.MergedAt.Time,
 		}
 	}
 
@@ -156,8 +156,11 @@ func getPullRequests(
 		}
 
 		for _, pr := range prs {
-			startOk := pr.ClosedAt.After(includeStart) || pr.ClosedAt.Time.Equal(includeStart)
-			endOk := pr.ClosedAt.Before(excludeEnd)
+			if pr.MergedAt == nil {
+				continue
+			}
+			startOk := pr.MergedAt.After(includeStart) || pr.MergedAt.Time.Equal(includeStart)
+			endOk := pr.MergedAt.Before(excludeEnd)
 			if startOk && endOk {
 				pullRequests = append(pullRequests, *pr)
 			}
