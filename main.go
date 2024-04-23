@@ -46,12 +46,19 @@ func main() {
 				Usage:    "GitHub Access Token",
 				Required: false,
 			},
+			&cli.StringFlag{
+				Name:     "base",
+				Aliases:  []string{"b"},
+				Usage:    "base branch name to filter",
+				Required: false,
+			},
 		},
 		Action: func(ctx *cli.Context) error {
 			owner := ctx.String("owner")
 			repository := ctx.String("repository")
 			start := ctx.Timestamp("start")
 			end := ctx.Timestamp("end")
+			base := ctx.String("base")
 
 			token := ctx.String("token")
 			if len(token) == 0 {
@@ -61,7 +68,7 @@ func main() {
 				return errors.New("provide Github Access Token")
 			}
 
-			err := showStatAsJson(owner, repository, *start, *end, token)
+			err := showStatAsJson(owner, repository, *start, *end, base, token)
 			return err
 		},
 	}

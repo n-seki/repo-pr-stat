@@ -50,12 +50,12 @@ func (stat *PRStat) json() (string, error) {
 	}
 	j, err := json.Marshal(s)
 	if err != nil {
-		return "", fmt.Errorf("Marchal Failed: %v", err)
+		return "", fmt.Errorf("marchal failed: %v", err)
 	}
 	var buf bytes.Buffer
 	err = json.Indent(&buf, j, "", "  ")
 	if err != nil {
-		return "", fmt.Errorf("Indent failed: %v", err)
+		return "", fmt.Errorf("indent failed: %v", err)
 	}
 	return buf.String(), nil
 }
@@ -97,10 +97,11 @@ func showStatAsJson(
 	repo string,
 	includeStart time.Time,
 	excludeEnd time.Time,
+	base string,
 	accessToken string,
 ) error {
 	client := github.NewClient(nil).WithAuthToken(accessToken)
-	pullRequests, err := getPullRequests(client, owner, repo, includeStart, excludeEnd)
+	pullRequests, err := getPullRequests(client, owner, repo, includeStart, excludeEnd, base)
 	if err != nil {
 		return err
 	}
@@ -132,27 +133,32 @@ func getPullRequests(
 	repo string,
 	includeStart time.Time,
 	excludeEnd time.Time,
+	base string,
 ) (*[]github.PullRequest, error) {
 	page := 1
 	var pullRequests [](github.PullRequest)
+	options := &github.PullRequestListOptions{
+		State:     "closed",
+		Sort:      "created",
+		Direction: "desc",
+		ListOptions: github.ListOptions{
+			PerPage: 100,
+		},
+	}
+	if len(base) > 0 {
+		options.Base = base
+	}
 	for {
+		options.ListOptions.Page = page
 		prs, _, err := client.PullRequests.List(
 			context.Background(),
 			owner,
 			repo,
-			&github.PullRequestListOptions{
-				State:     "closed",
-				Sort:      "created",
-				Direction: "desc",
-				ListOptions: github.ListOptions{
-					Page:    page,
-					PerPage: 100,
-				},
-			},
+			options,
 		)
 
 		if err != nil {
-			return nil, fmt.Errorf("Get pullrequest failed: %v", err)
+			return nil, fmt.Errorf("get pullrequest failed: %v", err)
 		}
 
 		for _, pr := range prs {
