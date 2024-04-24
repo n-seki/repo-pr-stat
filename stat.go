@@ -8,6 +8,8 @@ import (
 	"log"
 	"time"
 
+	"golang.org/x/exp/slices"
+
 	"github.com/google/go-github/v55/github"
 )
 
@@ -97,11 +99,12 @@ func showStatAsJson(
 	repo string,
 	includeStart time.Time,
 	excludeEnd time.Time,
-	base string,
+	includeBases []string,
+	excludeBases []string,
 	accessToken string,
 ) error {
 	client := github.NewClient(nil).WithAuthToken(accessToken)
-	pullRequests, err := getPullRequests(client, owner, repo, includeStart, excludeEnd, base)
+	pullRequests, err := getPullRequests(client, owner, repo, includeStart, excludeEnd, includeBases, excludeBases)
 	if err != nil {
 		return err
 	}
@@ -133,7 +136,8 @@ func getPullRequests(
 	repo string,
 	includeStart time.Time,
 	excludeEnd time.Time,
-	base string,
+	includeBases []string,
+	excludeBases []string,
 ) (*[]github.PullRequest, error) {
 	page := 1
 	var pullRequests [](github.PullRequest)
@@ -145,8 +149,8 @@ func getPullRequests(
 			PerPage: 100,
 		},
 	}
-	if len(base) > 0 {
-		options.Base = base
+	if len(includeBases) == 1 && len(excludeBases) == 0 {
+		options.Base = includeBases[0]
 	}
 	for {
 		options.ListOptions.Page = page
@@ -163,6 +167,12 @@ func getPullRequests(
 
 		for _, pr := range prs {
 			if pr.MergedAt == nil {
+				continue
+			}
+			if len(includeBases) >= 2 && !slices.Contains(includeBases, *pr.Base.Ref) {
+				continue
+			}
+			if len(excludeBases) >= 1 && slices.Contains(excludeBases, *pr.Base.Ref) {
 				continue
 			}
 			startOk := pr.MergedAt.After(includeStart) || pr.MergedAt.Time.Equal(includeStart)
