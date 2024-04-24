@@ -40,16 +40,20 @@ func main() {
 				Layout:   time.RFC3339,
 				Required: true,
 			},
+			&cli.StringSliceFlag{
+				Name:     "include-base",
+				Usage:    "include base branch name",
+				Required: false,
+			},
+			&cli.StringSliceFlag{
+				Name:     "exclude-base",
+				Usage:    "exclude base branch name",
+				Required: false,
+			},
 			&cli.StringFlag{
 				Name:     "token",
 				Aliases:  []string{"t"},
 				Usage:    "GitHub Access Token",
-				Required: false,
-			},
-			&cli.StringFlag{
-				Name:     "base",
-				Aliases:  []string{"b"},
-				Usage:    "base branch name to filter",
 				Required: false,
 			},
 		},
@@ -58,7 +62,8 @@ func main() {
 			repository := ctx.String("repository")
 			start := ctx.Timestamp("start")
 			end := ctx.Timestamp("end")
-			base := ctx.String("base")
+			includeBases := ctx.StringSlice("include-base")
+			excludeBases := ctx.StringSlice("exclude-base")
 
 			token := ctx.String("token")
 			if len(token) == 0 {
@@ -68,7 +73,7 @@ func main() {
 				return errors.New("provide Github Access Token")
 			}
 
-			err := showStatAsJson(owner, repository, *start, *end, base, token)
+			err := showStatAsJson(owner, repository, *start, *end, includeBases, excludeBases, token)
 			return err
 		},
 	}

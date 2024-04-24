@@ -13,5 +13,6 @@ require (
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
+	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f
 	golang.org/x/sys v0.11.0 // indirect
 )

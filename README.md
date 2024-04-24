@@ -3,7 +3,7 @@
 ## Usage
 
 ```
-$ go run . -help
+$ go run . --help
 NAME:
    Repo-PR-Stat - show pull request stat
 
@@ -14,12 +14,14 @@ COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --owner value, -o value       repository owner
-   --repository value, -r value  repository name
-   --start value, -s value       start time
-   --end value, -e value         end time
-   --token value, -t value       GitHub Access Token
-   --help, -h                    show help
+   --owner value, -o value                        repository owner
+   --repository value, -r value                   repository name
+   --start value, -s value                        start time
+   --end value, -e value                          end time
+   --include-base value [ --include-base value ]  include base branch name
+   --exclude-base value [ --exclude-base value ]  exclude base branch name
+   --token value, -t value                        GitHub Access Token
+   --help, -h                                     show help                 show help
 ```
 
 You can also provide GitHub Access Token via ENV(key=GITHUB_ACCESS_TOKEN).
